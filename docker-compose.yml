@@ -74,7 +74,7 @@ services:
     ports:
       - '4040:4040'
     volumes:
-      - ./spark-defaults.conf.diff:/opt/bitnami/spark/conf/spark-defaults.conf
+      - ./spark-defaults.conf.driver:/opt/bitnami/spark/conf/spark-defaults.conf
       - ./metrics.properties:/opt/bitnami/spark/conf/metrics.properties
     stdin_open: true # docker run -i
     tty: true # docker run -t
