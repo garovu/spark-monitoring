@@ -30,7 +30,30 @@ applications.sink.prometheusServlet.path=/metrics/applications/prometheus
 
 ## Monitoring in Spark using JMXSink
 
-//update soon
+![](https://dzlab.github.io/assets/2020/20200608-spark-monitoring.png)
+
+Create new a application using `spark-shell` and add java-agent(jmx-exporter) to it (client mode).
+
+```shell
+bin/spark-shell \
+    --master spark://spark:7077 \
+    --conf "spark.driver.extraJavaOptions=-javaagent:jars/jmx_prometheus_javaagent-0.20.0.jar=9393:conf/jmx_config.yml"
+```
+
+Or sending a application using `spark-submit`.
+
+```shell
+./spark-submit \
+  ... \
+  --conf spark.driver.extraJavaOptions=-javaagent:$SPARK_HOME/jars/jmx_prometheus_javaagent.jar=9091:$SPARK_HOME/conf/prometheus-config.yml \
+  ...
+
+```
+
+### spark.driver.extraJavaOptions
+
+>A string of extra JVM options to pass to the driver. This is intended to be set by users. For instance, GC settings or other logging. Note that it is illegal to set maximum heap size (-Xmx) settings with this option. Maximum heap size settings can be set with spark.driver.memory in the cluster mode and through the --driver-memory command line option in the client mode.
+Note: In client mode, this config must not be set through the SparkConf directly in your application, because the driver JVM has already started at that point. Instead, please set this through the --driver-java-options command line option or in your default properties file. spark.driver.defaultJavaOptions will be prepended to this configuration.
 
 ## Reference
 
