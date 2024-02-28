@@ -7,7 +7,7 @@ services:
   spark:
     image: docker.io/bitnami/spark:3.5
     environment:
-      - SPARK_MODE=master
+      - SPARK_MODE=worker
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
@@ -74,7 +74,7 @@ services:
     ports:
       - '4040:4040'
     volumes:
-      - ./spark-defaults.conf.driver:/opt/bitnami/spark/conf/spark-defaults.conf
+      - ./driver-spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
       - ./metrics.properties:/opt/bitnami/spark/conf/metrics.properties
     stdin_open: true # docker run -i
     tty: true # docker run -t
