@@ -13,7 +13,7 @@ Apache Spark 3.0 introduced the following resources to expose metrics:
 Those features are more convinent than the agent approach that requires a port to be open (which may not be possible). The following tables summaries the new exposed endpoints for each node:
 
 ||Port| Prometheus Endpoint | JSON Endpoint |
-|:--:|
+|--|--|--|--|
 |Driver| 4040| /metrics/prometheus/| /metrics/json/|
 |Driver| 4040| /metrics/executors/prometheus/| /api/v1/applications/{id}/executors/|
 |Worker| 8081| /metrics/prometheus/| /metrics/json/|
