@@ -1,7 +1,7 @@
 # Copyright VMware, Inc.
 # SPDX-License-Identifier: APACHE-2.0
 
-version: '2'
+version: '3'
 name: spark-monitoring-jmx-exporter
 services:
   spark:
@@ -16,13 +16,12 @@ services:
       - SPARK_METRICS_ENABLED=true
     ports:
       - '8080:8080'
-      - '12345:12345'
-      - '4040:4040'
+      - '9393:9393'
     volumes:
-      - ./jmx-spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
-      - ./jmx-metrics.properties:/opt/bitnami/spark/conf/metrics.properties
-      - ./jmx_prometheus_javaagent-0.20.0.jar:/opt/bitnami/spark/jars/jmx_prometheus_javaagent-0.20.0.jar
-      - ./jmx_config.yml:/opt/bitnami/spark/conf/jmx_config.yml
+      - ./spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+      - ./metrics.properties:/opt/bitnami/spark/conf/metrics.properties
+      - ./prometheus_javaagent-0.20.0.jar:/opt/bitnami/spark/jars/jmx_prometheus_javaagent-0.20.0.jar
+      - ./config.yml:/opt/bitnami/spark/conf/jmx_config.yml
   # spark-worker:
   #   image: docker.io/bitnami/spark:3.5
   #   environment:
@@ -73,9 +72,32 @@ services:
   #     - 'first-app'
   #   ports:
   #     - '4040:4040'
-  #   volumes:
-  #     - ./driver.spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
-  #     - ./metrics.properties:/opt/bitnami/spark/conf/metrics.properties
-  #   stdin_open: true # docker run -i
-  #   tty: true # docker run -t
+  #   # volumes:
+  #   #   # - ./driver.spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+  #   #   # - ./metrics.properties:/opt/bitnami/spark/conf/metrics.properties
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prom_data:/prometheus
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
 
+
+volumes:
+  prom_data:
