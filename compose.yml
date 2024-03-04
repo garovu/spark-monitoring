@@ -1,10 +1,7 @@
-# Copyright VMware, Inc.
-# SPDX-License-Identifier: APACHE-2.0
-
-version: '2'
+version: '3'
 
 services:
-  spark:
+  master:
     image: docker.io/bitnami/spark:3.5
     environment:
       - SPARK_MODE=worker
@@ -23,11 +20,11 @@ services:
       - ./sbin/start-connect-server.sh
       - '--packages' 
       - 'org.apache.spark:spark-connect_2.12:3.5.0'
-  spark-worker:
+  worker:
     image: docker.io/bitnami/spark:3.5
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_MASTER_URL=spark://master:7077
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -44,7 +41,7 @@ services:
     image: docker.io/bitnami/spark:3.5
     environment:
       - SPARK_MODE=worker 
-      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_MASTER_URL=spark://master:7077
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -54,19 +51,19 @@ services:
       - SPARK_USER=spark
     ports:
       - '18080:18080'
-      - '8082:8081'
+      - '8090:8081'
     volumes:
       - ./spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
       - ./metrics.properties:/opt/bitnami/spark/conf/metrics.properties
       - ./spark-logs:/opt/spark/spark-events
     command:
       - ./sbin/start-history-server.sh
-  driver-server:
+  driver:
     image: docker.io/bitnami/spark:3.5
     command: 
       - ./bin/spark-shell
       - '--master'
-      - 'spark://spark:7077'
+      - 'spark://master:7077'
       - '--deploy-mode'
       - 'client'
       - '--name'
@@ -78,3 +75,30 @@ services:
       - ./metrics.properties:/opt/bitnami/spark/conf/metrics.properties
     stdin_open: true # docker run -i
     tty: true # docker run -t
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prom_data:/prometheus
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./monitoring/grafana.datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./monitoring/grafana.dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - 'grafana_storage:/var/lib/grafana'
+volumes:
+  prom_data: {}
+  grafana_storage: {}
