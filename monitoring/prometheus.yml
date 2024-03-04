@@ -1,0 +1,47 @@
+global:
+  scrape_interval: 15s # Scrape targets every 15 seconds
+  evaluation_interval: 15s # Evaluate rules every 15 seconds
+
+# Scrape configurations
+scrape_configs:
+  # # Scrape Prometheus itself
+  # - job_name: 'prometheus'
+  #   static_configs:
+  #   - targets: ['localhost:9090']
+
+  # - job_name: 'spark_jmx_driver'
+  #   static_configs:
+  #   - targets: ['spark:9393'] # Replace with actual node exporters4
+  #   metrics_path: '/'
+
+  # Scraping spark master node
+  - job_name: "spark-master"
+    static_configs:
+      - targets: ["master:8080"]
+    metrics_path: "/metrics/master/prometheus"
+
+  # Scraping spark applications master node
+  - job_name: "spark-master-applications"
+    static_configs:
+      - targets: ["master:8080"]
+    metrics_path: "/metrics/applications/prometheus/"
+
+  # Scraping worker worker node
+  - job_name: "spark-worker"
+    static_configs:
+      - targets: ["worker:8081"]
+        labels:
+          worker_id: "worker-01"
+    metrics_path: "/metrics/prometheus"
+
+    # Scraping spark driver node
+  - job_name: "spark-driver"
+    static_configs:
+      - targets: ["driver:4040"]
+    metrics_path: "/metrics/prometheus/"
+
+  # Scraping spark executors node
+  - job_name: "spark-executors"
+    static_configs:
+      - targets: ["driver:4040"]
+    metrics_path: "/metrics/executors/prometheus/"
